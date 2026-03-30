@@ -1,0 +1,35 @@
+[
+  {
+    "file": "./lib/munit/munit.c",
+    "arguments": [
+      "gcc",
+      "-Wall",
+      "-Wextra",
+      "-std=c99",
+      "-g",
+      "./lib/munit/munit.c",
+      "-c",
+      "-o",
+      "build/munit.o"
+    ],
+    "directory": "/home/martin/Documents/shenanigans/chakal",
+    "output": "build/munit.o"
+  },
+  {
+    "file": "test/chakal_types_test.c",
+    "arguments": [
+      "gcc",
+      "-I./lib/munit",
+      "-I./src",
+      "-Wall",
+      "-Wextra",
+      "-std=c99",
+      "-g",
+      "test/chakal_types_test.c",
+      "-o",
+      "build/types_test"
+    ],
+    "directory": "/home/martin/Documents/shenanigans/chakal",
+    "output": "build/types_test"
+  }
+]
