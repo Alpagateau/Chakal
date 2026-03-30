@@ -63,49 +63,56 @@ struct chakal_closure *chakal_closure_apply_multiple(struct chakal_closure *cl,
   va_list args;
   va_start(args, fmt);
 
-  size_t computed_new_size = 0;
   size_t arg_number = 0;
-  chakal_format_allocated_size(fmt, &computed_new_size, &arg_number);
-  void *buffer = chakal_alloc(cl->alloc, computed_new_size);
+  size_t a = 0;
+  chakal_format_allocated_size(fmt, &a, &arg_number);
   struct chakal_closure *new_cl = chakal_alloc(cl->alloc, sizeof(*new_cl));
   new_cl->fn = cl->fn;
   new_cl->arity = cl->arity;
   new_cl->applied = cl->applied + arg_number;
   new_cl->alloc = cl->alloc;
-  new_cl->args = chakal_alloc(new_cl->alloc, sizeof(void *) * new_cl->applied);
-  for (size_t i = 0; i < cl->applied; i++)
-    new_cl->args[i] = cl->args[i];
-
+  new_cl->args = cl->args;
+  
   size_t fmt_idx = 0;
-  size_t arg_idx = 0;
-  size_t buffer_idx = 0;
-  while (fmt[fmt_idx] != 0 && arg_idx < arg_number && buffer_idx < computed_new_size) {
-    new_cl->args[cl->applied + arg_idx] = &((char *)buffer)[buffer_idx];
+  while (fmt[fmt_idx] != 0) {
     switch (fmt[fmt_idx]) {
     case 'c':
-      *(char *)((char *)buffer + buffer_idx) = (char)va_arg(args, int);
-      buffer_idx += sizeof(char);
+      {
+          char* c = chakal_alloc(cl->alloc, sizeof(char));
+          *c = (char)va_arg(args, int);
+          new_cl->args = chakal_ntree_append(cl->alloc, new_cl->args, c);
+      }
       break;
     case 'i':
-      *(int *)((char *)buffer + buffer_idx) = va_arg(args, int);
-      buffer_idx += sizeof(int);
+      {
+          int* c = chakal_alloc(cl->alloc, sizeof(int));
+          *c = (int)va_arg(args, int);
+          new_cl->args = chakal_ntree_append(cl->alloc, new_cl->args, c);
+      }
       break;
     case 'f':
-      *(float *)((char *)buffer + buffer_idx) = (float)va_arg(args, double);
-      buffer_idx += sizeof(float);
+      {
+          float* c = chakal_alloc(cl->alloc, sizeof(float));
+          *c = (float)va_arg(args, double);
+          new_cl->args = chakal_ntree_append(cl->alloc, new_cl->args, c);
+      }
       break;
     case 'd':
-      *(double *)((char *)buffer + buffer_idx) = va_arg(args, double);
-      buffer_idx += sizeof(double);
+      {
+          double* c = chakal_alloc(cl->alloc, sizeof(double));
+          *c = (double)va_arg(args, double);
+          new_cl->args = chakal_ntree_append(cl->alloc, new_cl->args, c);
+      }
       break;
     case '*':
-      new_cl->args[cl->applied+arg_idx] = va_arg(args, void *);
+      {
+          new_cl->args = chakal_ntree_append(cl->alloc, new_cl->args, va_arg(args, void*));
+      }
       break;
     default:
-        arg_idx--;
+      break;
     }
     fmt_idx++;
-    arg_idx++;
   }
   va_end(args);
   return new_cl;
@@ -115,5 +122,9 @@ void chakal_closure_eval(struct chakal_closure *cl, void *result) {
   if (cl->applied != cl->arity) {
     result = NULL;
   }
-  cl->fn(result, cl->args, cl->alloc);
+  void** args = malloc(sizeof(void*) * (cl->arity + 1));
+  size_t argn = chakal_ntree_read_arguments(cl->args, args, cl->arity);
+  fflush(stdout);
+  cl->fn(result, args, cl->alloc);
+  free(args);
 }

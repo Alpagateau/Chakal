@@ -15,14 +15,12 @@ struct chakal_closure* CONCAT(chakal_closure_apply_, name)( \
   new_cl->fn = cl->fn; \
   new_cl->arity = cl->arity; \
   new_cl->applied = cl->applied+1; \
-  new_cl->alloc = cl->alloc;  \
-  new_cl->args =  \
-    chakal_alloc(new_cl->alloc, sizeof(void*) * new_cl->applied); \
-  for(size_t i = 0; i < cl->applied; i++)\
-  new_cl->args[i] = cl->args[i];\
-  t *argp = chakal_alloc(new_cl->alloc, sizeof(t)); \
-  *argp = arg;\
-  new_cl->args[cl->applied] = argp; \
+  new_cl->alloc = cl->alloc; \
+  t *ptr = chakal_alloc(cl->alloc, sizeof(t)); \
+  *ptr = arg; \
+  new_cl->args = chakal_ntree_append( \
+    cl->alloc,cl->args,ptr \
+  ); \
   return new_cl;  \
 }
 

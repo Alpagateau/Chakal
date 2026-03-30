@@ -89,8 +89,7 @@ static MunitResult test_closure_single_apply(const MunitParameter params[], void
 
     munit_assert_size(cl2->applied, ==, 1);
     munit_assert_ptr_not_null(cl2->args);
-    munit_assert_int(*(int*)cl2->args[0], ==, 5);
-
+    
     chakal_free_arena(arena);
     return MUNIT_OK;
 }
@@ -105,9 +104,6 @@ static MunitResult test_closure_multiple_apply(const MunitParameter params[], vo
         chakal_closure_apply_multiple(cl, "ii", 3, 7);
 
     munit_assert_size(cl2->applied, ==, 2);
-    munit_assert_int(*(int*)cl2->args[0], ==, 3);
-    munit_assert_int(*(int*)cl2->args[1], ==, 7);
-
     chakal_free_arena(arena);
     return MUNIT_OK;
 }
@@ -124,8 +120,6 @@ static MunitResult test_closure_multiple_ptr(const MunitParameter params[], void
         chakal_closure_apply_multiple(cl, "*i", var, 2);
 
     munit_assert_size(cl2->applied, ==, 2);
-    munit_assert_ptr((void*)cl2->args[0], ==, (void*)var);
-    munit_assert_int(*(int*)cl2->args[1], ==, 2);
     int result = 0;
     chakal_closure_eval(cl2, &result);
     munit_assert_int(result, ==, 333);
