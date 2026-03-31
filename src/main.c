@@ -69,7 +69,8 @@ int main()
   );
   
   printf("1 + 2 * 3 = %d\n", result); 
-  chakal_closure_eval(chakal_closure_apply_int(add_mul_c, 4),&result);
+  int four = 4;
+  chakal_closure_apply_eval(add_mul_c, &four, &result);
   printf("1 + 2 * 4 = %d\n", result);
 
   double r = 0;

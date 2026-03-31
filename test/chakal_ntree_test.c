@@ -10,6 +10,7 @@
 
 static MunitResult test_ntree_append(const MunitParameter params[], void* data)
 {
+  (void)params; (void)data;
   struct chakal_arena* arena = new_arena(1024);
   int a = 111;
   int b = 222;
@@ -26,6 +27,7 @@ static MunitResult test_ntree_append(const MunitParameter params[], void* data)
 
 static MunitResult test_ntree_extract(const MunitParameter params[], void* data)
 {
+  (void)params; (void)data;
   struct chakal_arena* arena = new_arena(1024);
   int a = 111;
   int b = 222;

@@ -118,6 +118,24 @@ struct chakal_closure *chakal_closure_apply_multiple(struct chakal_closure *cl,
   return new_cl;
 }
 
+void chakal_closure_apply_eval(
+  struct chakal_closure* cl, void* arg, void* result
+)
+{ 
+  struct chakal_arena* a = new_arena(256);
+  struct chakal_closure *new_cl = chakal_alloc(a, sizeof(*new_cl));
+  new_cl->fn = cl->fn;
+  new_cl->arity = cl->arity;
+  new_cl->applied = cl->applied + 1;
+  new_cl->alloc = a;
+  new_cl->args = chakal_ntree_append(
+    a,cl->args,arg
+  );
+  chakal_closure_eval(new_cl, result);
+  chakal_free_arena(a);
+}
+
+
 void chakal_closure_eval(struct chakal_closure *cl, void *result) {
   if (cl->applied != cl->arity) {
     result = NULL;

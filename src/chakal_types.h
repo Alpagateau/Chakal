@@ -35,8 +35,16 @@ struct chakal_closure
   struct chakal_arena* alloc;
 };
 
+void chakal_closure_eval(
+  struct chakal_closure* cl, void* result
+);
+
 struct chakal_closure* chakal_closure_apply(
   struct chakal_closure* cl, void* arg
+);
+
+void chakal_closure_apply_eval(
+  struct chakal_closure* cl, void* arg, void*result
 );
 
 void chakal_format_allocated_size(
@@ -49,5 +57,4 @@ void chakal_format_allocated_size(
 /// - * : void pointer
 struct chakal_closure* chakal_closure_apply_multiple(struct chakal_closure* cl, const char* fmt, ...);
 
-void chakal_closure_eval(struct chakal_closure* cl, void* result);
 #endif

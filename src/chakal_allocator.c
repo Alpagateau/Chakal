@@ -16,7 +16,7 @@ void *chakal_alloc(struct chakal_arena *a, size_t size) {
     return NULL;
   void *ptr = &a->arena[a->size];
   a->size += size;
-  printf("Arena <%zu / %zu>\n", a->size, a->capacity);
+  //printf("Arena <%zu / %zu>\n", a->size, a->capacity);
   return ptr;
 }
 
