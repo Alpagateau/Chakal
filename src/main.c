@@ -62,6 +62,7 @@ int main()
 
   int result = 0;
   printf("No packed application : 728/1024\n");
+  printf("With packed application : 524/1024\n");
   //struct chakal_closure* add_mul_c = chakal_closure_apply_int(chakal_closure_apply_int(&closed_add_mul,1),2);
   struct chakal_closure* add_mul_c = chakal_closure_apply_multiple(&closed_add_mul, "ii", 1, 2);
   chakal_closure_eval(

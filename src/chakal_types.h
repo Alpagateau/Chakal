@@ -28,8 +28,10 @@ struct chakal_closure* CONCAT(chakal_closure_apply_, name)( \
 //CLOSURE
 struct chakal_closure
 {
+  //A pointer to the function need to be called. If null, then the object is a Container
   void (*fn)(void* result, void** args, struct chakal_arena*);
   struct chakal_ntree* args;
+  //If fn != Null, the number of arguments to pass the function. Else, an identifier to what kind of container it is
   size_t arity;
   size_t applied;
   struct chakal_arena* alloc;

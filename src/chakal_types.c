@@ -137,8 +137,8 @@ void chakal_closure_apply_eval(
 
 
 void chakal_closure_eval(struct chakal_closure *cl, void *result) {
-  if (cl->applied != cl->arity) {
-    result = NULL;
+  if (cl->applied != cl->arity || cl->fn == NULL) {
+    result = cl; // Makes more sens
   }
   void** args = malloc(sizeof(void*) * (cl->arity + 1));
   size_t argn = chakal_ntree_read_arguments(cl->args, args, cl->arity);
