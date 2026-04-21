@@ -151,6 +151,7 @@ struct chakal_closure* chakal_closure_eval(struct chakal_closure *cl) {
   void** args = malloc(sizeof(void*) * (cl->partial.arity));
   size_t argn = chakal_ntree_read_arguments(cl->partial.args, args, cl->partial.arity);
   (void)argn;
+  printf("[DEBUG] New closure\n");
   struct chakal_closure* atom = chakal_alloc(cl->partial.alloc, sizeof(struct chakal_closure));
   atom->kind = ATOM; 
   

@@ -1,10 +1,10 @@
 #ifndef CHAKAL_TYPES_H
 #define CHAKAL_TYPES_H
 
-#include <stddef.h>
-#include <stdarg.h>
 #include "chakal_allocator.h"
 #include "chakal_ntree.h"
+#include <stdarg.h>
+#include <stddef.h>
 
 #define CONCAT(A, B) A##B
 #define GEN_CLOSURE_APPLY(name, t) \
@@ -23,7 +23,6 @@ static struct chakal_closure* CONCAT(chakal_closure_apply_, name)( \
   ); \
   return new_cl;  \
 }
-
 
 //CLOSURE
 typedef enum {

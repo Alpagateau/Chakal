@@ -5,12 +5,12 @@
 #include "chakal_types.h"
 
 GEN_CLOSURE_APPLY(int, int)
-GEN_CLOSURE_APPLY(double, double)
+//GEN_CLOSURE_APPLY(double, double)
 
 //First order curried function
-int add_mul(int a, int b, int c)
+static int add_mul(int _a, int _b, int _c)
 {
-  return a + b * c;
+  return _a + (_b * _c);
 }
 
 static void curried_add_mul(void** result, void** args, struct chakal_arena* env)
@@ -28,25 +28,24 @@ static void curried_add_mul(void** result, void** args, struct chakal_arena* env
 //Second order curried function
 static void curried_interpolate(void** result, void** args, struct chakal_arena* env)
 {
-  struct chakal_closure* f = args[0];
+  struct chakal_closure* func = args[0];
   double value = *(double*)args[1];
-  int a = floor(value);
-  int b = a+1;
-  double t = value - a; 
-  struct chakal_closure* fa = chakal_closure_apply(f, &a);
-  struct chakal_closure* fb = chakal_closure_apply(f, &b);
-  struct chakal_closure* x = chakal_closure_eval(fa);
-  struct chakal_closure* y = chakal_closure_eval(fb);
-  int x_1 = *(int*)(x->atom.data);
-  int x_2 = *(int*)(y->atom.data);
-  double res = (x_2 * t) + (x_1 * (1 - t));
+  int min = floor(value);
+  int max = min+1;
+  double percent = value - min; 
+  struct chakal_closure* fmin = chakal_closure_apply(func, &min);
+  struct chakal_closure* fmax = chakal_closure_apply(func, &max);
+  struct chakal_closure* less = chakal_closure_eval(fmin);
+  struct chakal_closure* more = chakal_closure_eval(fmax);
+  int x_1 = *(int*)(less->atom.data);
+  int x_2 = *(int*)(more->atom.data);
+  double res = (x_2 * percent) + (x_1 * (1 - percent));
   *result = chakal_alloc(env, sizeof(double));
   *(double*)(*result) = res;
 }
 
 int main()
 {
-
   struct chakal_arena* arena = new_arena(1024);
   struct chakal_closure closed_add_mul = 
     {

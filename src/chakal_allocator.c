@@ -1,5 +1,6 @@
 #include "chakal_allocator.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 struct chakal_arena *new_arena(size_t size) {
   struct chakal_arena *arena = malloc(sizeof(*arena));
