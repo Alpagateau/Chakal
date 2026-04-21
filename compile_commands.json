@@ -1,0 +1,19 @@
+[
+  {
+    "file": "test/chakal_types_test.c",
+    "arguments": [
+      "gcc",
+      "-I./lib/munit",
+      "-I./src",
+      "-Wall",
+      "-Wextra",
+      "-std=c99",
+      "-g",
+      "test/chakal_types_test.c",
+      "-o",
+      "build/types_test"
+    ],
+    "directory": "/home/martin/Documents/shenanigans/chakal",
+    "output": "build/types_test"
+  }
+]

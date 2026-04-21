@@ -8,45 +8,56 @@
 
 #define CONCAT(A, B) A##B
 #define GEN_CLOSURE_APPLY(name, t) \
-struct chakal_closure* CONCAT(chakal_closure_apply_, name)( \
+static struct chakal_closure* CONCAT(chakal_closure_apply_, name)( \
   struct chakal_closure* cl, t arg \
 ){ \
-  struct chakal_closure* new_cl = chakal_alloc(cl->alloc, sizeof(*new_cl)); \
-  new_cl->fn = cl->fn; \
-  new_cl->arity = cl->arity; \
-  new_cl->applied = cl->applied+1; \
-  new_cl->alloc = cl->alloc; \
-  t *ptr = chakal_alloc(cl->alloc, sizeof(t)); \
+  struct chakal_closure* new_cl = chakal_alloc(cl->partial.alloc, sizeof(*new_cl)); \
+  new_cl->partial.fn      = cl->partial.fn; \
+  new_cl->partial.arity   = cl->partial.arity; \
+  new_cl->partial.applied = cl->partial.applied+1; \
+  new_cl->partial.alloc   = cl->partial.alloc; \
+  t *ptr = chakal_alloc(cl->partial.alloc, sizeof(t)); \
   *ptr = arg; \
-  new_cl->args = chakal_ntree_append( \
-    cl->alloc,cl->args,ptr \
+  new_cl->partial.args = chakal_ntree_append( \
+    cl->partial.alloc,cl->partial.args,ptr \
   ); \
   return new_cl;  \
 }
 
 
 //CLOSURE
+typedef enum {
+  PARTIAL = 0,
+  ATOM
+} closure_kind_t;
+
 struct chakal_closure
 {
-  //A pointer to the function need to be called. If null, then the object is a Container
-  void (*fn)(void* result, void** args, struct chakal_arena*);
-  struct chakal_ntree* args;
-  //If fn != Null, the number of arguments to pass the function. Else, an identifier to what kind of container it is
-  size_t arity;
-  size_t applied;
-  struct chakal_arena* alloc;
+  closure_kind_t kind;
+  union {
+    struct {
+      void (*fn)(void** result, void** args, struct chakal_arena*);
+      struct chakal_ntree* args;
+      size_t arity;
+      size_t applied;
+      struct chakal_arena* alloc;
+    } partial;
+    struct {
+      void* data;
+    } atom;
+  };
 };
 
-void chakal_closure_eval(
-  struct chakal_closure* cl, void* result
+struct chakal_closure* chakal_closure_eval(
+  struct chakal_closure* cl
 );
 
 struct chakal_closure* chakal_closure_apply(
   struct chakal_closure* cl, void* arg
 );
 
-void chakal_closure_apply_eval(
-  struct chakal_closure* cl, void* arg, void*result
+struct chakal_closure* chakal_closure_apply_eval(
+  struct chakal_closure* cl, void* arg
 );
 
 void chakal_format_allocated_size(

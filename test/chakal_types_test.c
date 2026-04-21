@@ -2,35 +2,37 @@
 #include <string.h>
 #include <stdio.h>
 #include <munit.h>
-
 #include "chakal_types.h"
+#include "chakal_allocator.h"
 
 /* -------------------------------------------------------
  * Helpers / Mock Functions
  * -------------------------------------------------------*/
 
-static void sum_ints(void* result, void** args, struct chakal_arena* arena) {
-    (void)arena;
-    int* out = (int*)result;
+static void sum_ints(void** result, void** args, struct chakal_arena* arena) {
     int a = *(int*)args[0];
     int b = *(int*)args[1];
-    *out = a + b;
+    int res = a + b;
+    *result = chakal_alloc(arena, sizeof(int));
+    *(int*)(*result) = res;
 }
 
-static void multiply_double(void* result, void** args, struct chakal_arena* arena) {
-    (void)arena;
-    double* out = (double*)result;
+static void multiply_double(void** result, void** args, struct chakal_arena* arena) {
     double a = *(double*)args[0];
     double b = *(double*)args[1];
-    *out = a * b;
+    double res = a * b;
+    *result = chakal_alloc(arena, sizeof(int));
+    *(double*)(*result) = res;
 }
 
-static void read_int_array(void* result, void** args, struct chakal_arena* a)
+static void read_int_array(void** result, void** args, struct chakal_arena* env)
 {
-  (void)a;
   int* array = (int*)args[0];
-  int idx = *(int*)args[1];
-  *(int*)result = array[idx];
+  int idx = *(int*)args[1]; 
+  int res = array[idx];
+  *result = chakal_alloc(env, sizeof(int));
+  *(int*)(*result) = res;
+
 }
 
 /* -------------------------------------------------------
@@ -60,21 +62,22 @@ static MunitResult test_arena_basic_alloc(const MunitParameter params[], void* d
 
 static struct chakal_closure* make_sum_closure(struct chakal_arena* arena) {
     struct chakal_closure* cl = chakal_alloc(arena, sizeof(*cl));
-    cl->fn = sum_ints;
-    cl->arity = 2;
-    cl->applied = 0;
-    cl->alloc = arena;
-    cl->args = NULL;
+    cl->kind = 0;
+    cl->partial.fn = sum_ints;
+    cl->partial.arity = 2;
+    cl->partial.applied = 0;
+    cl->partial.alloc = arena;
+    cl->partial.args = NULL;
     return cl;
 }
 
 static struct chakal_closure* make_array_closure(struct chakal_arena* arena) {
     struct chakal_closure* cl = chakal_alloc(arena, sizeof(*cl));
-    cl->fn = read_int_array;
-    cl->arity = 2;
-    cl->applied = 0;
-    cl->alloc = arena;
-    cl->args = NULL;
+    cl->partial.fn = read_int_array;
+    cl->partial.arity = 2;
+    cl->partial.applied = 0;
+    cl->partial.alloc = arena;
+    cl->partial.args = NULL;
     return cl;
 }
 
@@ -87,8 +90,8 @@ static MunitResult test_closure_single_apply(const MunitParameter params[], void
     int x = 5;
     struct chakal_closure* cl2 = chakal_closure_apply(cl, &x);
 
-    munit_assert_size(cl2->applied, ==, 1);
-    munit_assert_ptr_not_null(cl2->args);
+    munit_assert_size(cl2->partial.applied, ==, 1);
+    munit_assert_ptr_not_null(cl2->partial.args);
     
     chakal_free_arena(arena);
     return MUNIT_OK;
@@ -103,7 +106,7 @@ static MunitResult test_closure_multiple_apply(const MunitParameter params[], vo
     struct chakal_closure* cl2 =
         chakal_closure_apply_multiple(cl, "ii", 3, 7);
 
-    munit_assert_size(cl2->applied, ==, 2);
+    munit_assert_size(cl2->partial.applied, ==, 2);
     chakal_free_arena(arena);
     return MUNIT_OK;
 }
@@ -119,10 +122,9 @@ static MunitResult test_closure_multiple_ptr(const MunitParameter params[], void
     struct chakal_closure* cl2 =
         chakal_closure_apply_multiple(cl, "*i", var, 2);
 
-    munit_assert_size(cl2->applied, ==, 2);
-    int result = 0;
-    chakal_closure_eval(cl2, &result);
-    munit_assert_int(result, ==, 333);
+    munit_assert_size(cl2->partial.applied, ==, 2);
+    struct chakal_closure* res = chakal_closure_eval(cl2);
+    munit_assert_int(*(int*)res->atom.data, ==, 333);
 
     chakal_free_arena(arena);
     return MUNIT_OK;
@@ -137,14 +139,14 @@ static MunitResult test_closure_eval_sum(const MunitParameter params[], void* da
     struct chakal_closure* cl2 =
         chakal_closure_apply_multiple(cl, "ii", 10, 20);
 
-    int result = 0;
-    chakal_closure_eval(cl2, &result);
+    struct chakal_closure* res = chakal_closure_eval(cl2);
 
-    munit_assert_int(result, ==, 30);
+    munit_assert_int(*(int*)res->atom.data, ==, 30);
 
     chakal_free_arena(arena);
     return MUNIT_OK;
 }
+
 
 static MunitResult test_closure_eval_double(const MunitParameter params[], void* data) {
     (void)params; (void)data;
@@ -152,19 +154,18 @@ static MunitResult test_closure_eval_double(const MunitParameter params[], void*
     struct chakal_arena* arena = new_arena(1024);
 
     struct chakal_closure* cl = chakal_alloc(arena, sizeof(*cl));
-    cl->fn = multiply_double;
-    cl->arity = 2;
-    cl->applied = 0;
-    cl->alloc = arena;
-    cl->args = NULL;
+    cl->partial.fn = multiply_double;
+    cl->partial.arity = 2;
+    cl->partial.applied = 0;
+    cl->partial.alloc = arena;
+    cl->partial.args = NULL;
 
     struct chakal_closure* cl2 =
         chakal_closure_apply_multiple(cl, "dd", 2.0, 4.0);
 
-    double result = 0.0;
-    chakal_closure_eval(cl2, &result);
+    struct chakal_closure* res = chakal_closure_eval(cl2);
 
-    munit_assert_double(result, ==, 8.0);
+    munit_assert_double(*(double*)res->atom.data, ==, 8.0);
 
     chakal_free_arena(arena);
     return MUNIT_OK;
@@ -185,12 +186,11 @@ static MunitResult test_closure_chaining(const MunitParameter params[], void* da
     struct chakal_closure* cl1 = chakal_closure_apply(cl, &a);
     struct chakal_closure* cl2 = chakal_closure_apply(cl1, &b);
 
-    munit_assert_size(cl2->applied, ==, 2);
+    munit_assert_size(cl2->partial.applied, ==, 2);
 
-    int result = 0;
-    chakal_closure_eval(cl2, &result);
+    struct chakal_closure* res = chakal_closure_eval(cl2);
 
-    munit_assert_int(result, ==, 3);
+    munit_assert_int(*(int*)res->atom.data, ==, 3);
 
     chakal_free_arena(arena);
     return MUNIT_OK;
@@ -205,8 +205,8 @@ static MunitResult test_closure_immutability(const MunitParameter params[], void
     int x = 42;
     struct chakal_closure* cl2 = chakal_closure_apply(cl, &x);
 
-    munit_assert_size(cl->applied, ==, 0);
-    munit_assert_size(cl2->applied, ==, 1);
+    munit_assert_size(cl->partial.applied, ==, 0);
+    munit_assert_size(cl2->partial.applied, ==, 1);
 
     chakal_free_arena(arena);
     return MUNIT_OK;

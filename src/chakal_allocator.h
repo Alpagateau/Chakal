@@ -4,13 +4,13 @@
 
 struct chakal_arena
 {
-  char* arena;
   size_t capacity;
   size_t size;
+  char* arena;
 };
 
 struct chakal_arena* new_arena(size_t size);
-void* chakal_alloc(struct chakal_arena* a, size_t size);
-void chakal_free_arena(struct chakal_arena*);
+void* chakal_alloc(struct chakal_arena* arena, size_t size);
+void chakal_free_arena(struct chakal_arena* arena);
 
 #endif

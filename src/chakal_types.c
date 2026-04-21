@@ -1,26 +1,30 @@
 #include "chakal_types.h"
 #include "chakal_ntree.h"
-#include <ctype.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-struct chakal_closure *chakal_closure_apply(struct chakal_closure *cl,
-                                            void *arg) {
-  struct chakal_closure *new_cl = chakal_alloc(cl->alloc, sizeof(*new_cl));
-  new_cl->fn = cl->fn;
-  new_cl->arity = cl->arity;
-  new_cl->applied = cl->applied + 1;
+struct chakal_closure *chakal_closure_apply(struct chakal_closure *cl, void *arg) {
+  
+  if(cl == NULL) return NULL;
+  if(cl->kind == ATOM) return cl;
+
+  struct chakal_closure *new_cl = chakal_alloc(cl->partial.alloc, sizeof(*new_cl));
+  new_cl->partial.fn = cl->partial.fn;
+  new_cl->partial.arity = cl->partial.arity;
+  new_cl->partial.applied = cl->partial.applied + 1;
   // TODO
-  new_cl->alloc = cl->alloc;
+  new_cl->partial.alloc = cl->partial.alloc;
   //new_cl->args = chakal_alloc(new_cl->alloc, sizeof(void *) * new_cl->applied);
-  new_cl->args = chakal_ntree_append(
-    cl->alloc,cl->args,arg
+  new_cl->partial.args = chakal_ntree_append(
+    cl->partial.alloc,cl->partial.args, arg
   );
-  //for (size_t i = 0; i < cl->applied; i++)
-    //new_cl->args[i] = cl->args[i];
-  //new_cl->args[cl->applied] = arg;
+  //Collapse functions when arity is filled
+  if(new_cl->partial.arity == new_cl->partial.applied)
+  {
+    return chakal_closure_eval(new_cl);
+  }
   return new_cl;
 }
 
@@ -66,47 +70,47 @@ struct chakal_closure *chakal_closure_apply_multiple(struct chakal_closure *cl,
   size_t arg_number = 0;
   size_t a = 0;
   chakal_format_allocated_size(fmt, &a, &arg_number);
-  struct chakal_closure *new_cl = chakal_alloc(cl->alloc, sizeof(*new_cl));
-  new_cl->fn = cl->fn;
-  new_cl->arity = cl->arity;
-  new_cl->applied = cl->applied + arg_number;
-  new_cl->alloc = cl->alloc;
-  new_cl->args = cl->args;
+  struct chakal_closure *new_cl = chakal_alloc(cl->partial.alloc, sizeof(*new_cl));
+  new_cl->partial.fn = cl->partial.fn;
+  new_cl->partial.arity = cl->partial.arity;
+  new_cl->partial.applied = cl->partial.applied + arg_number;
+  new_cl->partial.alloc = cl->partial.alloc;
+  new_cl->partial.args = cl->partial.args;
   
   size_t fmt_idx = 0;
   while (fmt[fmt_idx] != 0) {
     switch (fmt[fmt_idx]) {
     case 'c':
       {
-          char* c = chakal_alloc(cl->alloc, sizeof(char));
+          char* c = chakal_alloc(cl->partial.alloc, sizeof(char));
           *c = (char)va_arg(args, int);
-          new_cl->args = chakal_ntree_append(cl->alloc, new_cl->args, c);
+          new_cl->partial.args = chakal_ntree_append(cl->partial.alloc, new_cl->partial.args, c);
       }
       break;
     case 'i':
       {
-          int* c = chakal_alloc(cl->alloc, sizeof(int));
+          int* c = chakal_alloc(cl->partial.alloc, sizeof(int));
           *c = (int)va_arg(args, int);
-          new_cl->args = chakal_ntree_append(cl->alloc, new_cl->args, c);
+          new_cl->partial.args = chakal_ntree_append(cl->partial.alloc, new_cl->partial.args, c);
       }
       break;
     case 'f':
       {
-          float* c = chakal_alloc(cl->alloc, sizeof(float));
+          float* c = chakal_alloc(cl->partial.alloc, sizeof(float));
           *c = (float)va_arg(args, double);
-          new_cl->args = chakal_ntree_append(cl->alloc, new_cl->args, c);
+          new_cl->partial.args = chakal_ntree_append(cl->partial.alloc, new_cl->partial.args, c);
       }
       break;
     case 'd':
       {
-          double* c = chakal_alloc(cl->alloc, sizeof(double));
+          double* c = chakal_alloc(cl->partial.alloc, sizeof(double));
           *c = (double)va_arg(args, double);
-          new_cl->args = chakal_ntree_append(cl->alloc, new_cl->args, c);
+          new_cl->partial.args = chakal_ntree_append(cl->partial.alloc, new_cl->partial.args, c);
       }
       break;
     case '*':
       {
-          new_cl->args = chakal_ntree_append(cl->alloc, new_cl->args, va_arg(args, void*));
+          new_cl->partial.args = chakal_ntree_append(cl->partial.alloc, new_cl->partial.args, va_arg(args, void*));
       }
       break;
     default:
@@ -118,31 +122,40 @@ struct chakal_closure *chakal_closure_apply_multiple(struct chakal_closure *cl,
   return new_cl;
 }
 
-void chakal_closure_apply_eval(
-  struct chakal_closure* cl, void* arg, void* result
+struct chakal_closure* chakal_closure_apply_eval(
+  struct chakal_closure* cl, void* arg
 )
 { 
   struct chakal_arena* a = new_arena(256);
   struct chakal_closure *new_cl = chakal_alloc(a, sizeof(*new_cl));
-  new_cl->fn = cl->fn;
-  new_cl->arity = cl->arity;
-  new_cl->applied = cl->applied + 1;
-  new_cl->alloc = a;
-  new_cl->args = chakal_ntree_append(
-    a,cl->args,arg
+  new_cl->partial.fn = cl->partial.fn;
+  new_cl->partial.arity = cl->partial.arity;
+  new_cl->partial.applied = cl->partial.applied + 1;
+  new_cl->partial.alloc = a;
+  new_cl->partial.args = chakal_ntree_append(
+    a,cl->partial.args,arg
   );
-  chakal_closure_eval(new_cl, result);
+  struct chakal_closure* b = chakal_closure_eval(new_cl);
   chakal_free_arena(a);
+  return b;
 }
 
 
-void chakal_closure_eval(struct chakal_closure *cl, void *result) {
-  if (cl->applied != cl->arity || cl->fn == NULL) {
-    result = cl; // Makes more sens
+struct chakal_closure* chakal_closure_eval(struct chakal_closure *cl) {
+
+  if(cl->kind == ATOM) return cl;
+  if ( cl->partial.fn == NULL || cl->partial.applied != cl->partial.arity ) {
+    return cl;
   }
-  void** args = malloc(sizeof(void*) * (cl->arity + 1));
-  size_t argn = chakal_ntree_read_arguments(cl->args, args, cl->arity);
-  fflush(stdout);
-  cl->fn(result, args, cl->alloc);
+
+  void** args = malloc(sizeof(void*) * (cl->partial.arity));
+  size_t argn = chakal_ntree_read_arguments(cl->partial.args, args, cl->partial.arity);
+  (void)argn;
+  struct chakal_closure* atom = chakal_alloc(cl->partial.alloc, sizeof(struct chakal_closure));
+  atom->kind = ATOM; 
+  
+  cl->partial.fn(&(atom->atom.data), args, cl->partial.alloc);
+   
   free(args);
+  return atom;
 }

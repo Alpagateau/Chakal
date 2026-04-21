@@ -9,13 +9,13 @@ struct chakal_ntree
   struct chakal_ntree* parent;
 };
 
-struct chakal_ntree* chakal_ntree_of(struct chakal_arena*,void*);
+struct chakal_ntree* chakal_ntree_of(struct chakal_arena* arena, void* data);
 struct chakal_ntree* chakal_ntree_append(
-  struct chakal_arena* a,
-  struct chakal_ntree*, void*
+  struct chakal_arena* arena,
+  struct chakal_ntree* tree , void* data
 );
 size_t chakal_ntree_read_arguments(
-  struct chakal_ntree* t, 
+  struct chakal_ntree* tree, 
   void** buffer, size_t expected_size
 );
 
