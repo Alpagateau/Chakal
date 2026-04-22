@@ -10,6 +10,7 @@ struct chakal_arena
 };
 
 struct chakal_arena* new_arena(size_t size);
+struct chakal_arena *new_stack_arena(size_t size, void* buffer);
 void* chakal_alloc(struct chakal_arena* arena, size_t size);
 void chakal_free_arena(struct chakal_arena* arena);
 

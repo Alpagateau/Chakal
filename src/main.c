@@ -4,7 +4,7 @@
 #include "chakal_allocator.h"
 #include "chakal_types.h"
 
-#define ARENA_SIZE 1024
+#define ARENA_SIZE 2048
 
 GEN_CLOSURE_APPLY(int, int)
 //GEN_CLOSURE_APPLY(double, double)
@@ -48,7 +48,8 @@ static void curried_interpolate(void** result, void** args, struct chakal_arena*
 
 int main()
 {
-  struct chakal_arena* arena = new_arena(ARENA_SIZE);
+  char buffer[ARENA_SIZE] = {};
+  struct chakal_arena* arena = new_stack_arena(ARENA_SIZE, buffer);//new_arena(ARENA_SIZE);
   struct chakal_closure closed_add_mul = 
     {
       .kind = PARTIAL,
@@ -94,6 +95,6 @@ int main()
 
   printf("Total memory usage: %zu/%zu\n", arena->size, arena->capacity);
 
-  chakal_free_arena(arena);
+  //chakal_free_arena(arena);
   return 0;
 }

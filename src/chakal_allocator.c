@@ -10,10 +10,18 @@ struct chakal_arena *new_arena(size_t size) {
   return arena;
 }
 
+struct chakal_arena *new_stack_arena(size_t size, void* buffer)
+{
+  struct chakal_arena* arena = buffer;
+  arena->arena = (char*)&arena->arena;
+  arena->size = 0;
+  arena->capacity = size - sizeof(struct chakal_arena);
+  return arena;
+}
+
 void *chakal_alloc(struct chakal_arena *arena, size_t size) {
   if(arena == NULL) { return NULL; }
-  if (arena->size + size >= arena->capacity)
-  {return NULL;}
+  if (arena->size + size >= arena->capacity ){ return NULL; }
   void *ptr = &arena->arena[arena->size];
   arena->size += size;
   return ptr;
