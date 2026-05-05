@@ -1,11 +1,12 @@
-#include "chakal_ntree.h"
-#include "chakal_allocator.h"
 #include <stdio.h>
 
+#include "chakal_macros.h"
+#include "chakal_ntree.h"
+#include "chakal_allocator.h"
 
 struct chakal_ntree* chakal_ntree_of(struct chakal_arena* arena, void* ptr)
 {
-  printf("[DEBUG] New n-tree\n");
+  CHAKAL_INFO("New n-tree\n");
   struct chakal_ntree* tree = chakal_alloc(arena, sizeof(struct chakal_ntree));
   tree->value = ptr;
   tree->parent = NULL;

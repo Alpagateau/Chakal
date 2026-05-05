@@ -1,8 +1,6 @@
 #include <math.h>
 #include <stdio.h>
 #include "chakal.h"
-#include "chakal_allocator.h"
-#include "chakal_types.h"
 
 #define ARENA_SIZE 2048
 
