@@ -16,6 +16,7 @@ struct chakal_closure *chakal_closure_apply(struct chakal_closure *cl, void *arg
   new_cl->partial.fn = cl->partial.fn;
   new_cl->partial.arity = cl->partial.arity;
   new_cl->partial.applied = cl->partial.applied + 1;
+  CHAKAL_INFO("partial applied from %zu to %zu", cl->partial.applied, new_cl->partial.applied);
   new_cl->partial.alloc = cl->partial.alloc;
   new_cl->partial.args = chakal_ntree_append(
     cl->partial.alloc,cl->partial.args, arg

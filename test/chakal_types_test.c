@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <munit.h>
+#include "chakal_macros.h"
 #include "chakal_types.h"
 #include "chakal_allocator.h"
 
@@ -186,7 +187,8 @@ static MunitResult test_closure_chaining(const MunitParameter params[], void* da
     struct chakal_closure* cl1 = chakal_closure_apply(cl, &a);
     struct chakal_closure* cl2 = chakal_closure_apply(cl1, &b);
 
-    munit_assert_size(cl2->partial.applied, ==, 2);
+    munit_assert_int(cl2->kind, ==, ATOM);
+    munit_assert_size(cl2->partial.applied, ==, 0);
 
     struct chakal_closure* res = chakal_closure_eval(cl2);
 
