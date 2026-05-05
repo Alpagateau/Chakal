@@ -78,10 +78,10 @@ int main()
     chakal_closure_apply_int(add_mul_c, 3)
   );
   
-  printf("1 + 2 * 3 = %d\n", *(int*)res->atom.data); 
+  //printf("1 + 2 * 3 = %d\n", *(int*)res->atom.data); 
   int four = 4;
   res = chakal_closure_apply_eval(add_mul_c, &four);
-  printf("1 + 2 * 4 = %d\n", *(int*)res->atom.data);
+  //printf("1 + 2 * 4 = %d\n", *(int*)res->atom.data);
   
   double data = 0;
   const double x_1 = 3.8;

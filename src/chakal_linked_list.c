@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "chakal_linked_list.h"
@@ -34,6 +35,7 @@ void push_back(struct chakal_linked_list* l, size_t s, void* d)
   else 
   {
     struct chakal_linked_list* l2 = empty_chakal_linked_list_list(l->arena);
+    printf("[DEBUG] Push back element (linked list)\n");
     l2->data = chakal_alloc(l->arena,s);
     l2->size = s;
     memcpy(l2->data, d, s);

@@ -9,18 +9,15 @@ struct chakal_closure *chakal_closure_apply(struct chakal_closure *cl, void *arg
   
   if(cl == NULL) return NULL;
   if(cl->kind == ATOM) return cl;
-
+  printf("[DEBUG] New closure (apply)\n");
   struct chakal_closure *new_cl = chakal_alloc(cl->partial.alloc, sizeof(*new_cl));
   new_cl->partial.fn = cl->partial.fn;
   new_cl->partial.arity = cl->partial.arity;
   new_cl->partial.applied = cl->partial.applied + 1;
-  // TODO
   new_cl->partial.alloc = cl->partial.alloc;
-  //new_cl->args = chakal_alloc(new_cl->alloc, sizeof(void *) * new_cl->applied);
   new_cl->partial.args = chakal_ntree_append(
     cl->partial.alloc,cl->partial.args, arg
   );
-  //Collapse functions when arity is filled
   if(new_cl->partial.arity == new_cl->partial.applied)
   {
     return chakal_closure_eval(new_cl);
@@ -70,6 +67,7 @@ struct chakal_closure *chakal_closure_apply_multiple(struct chakal_closure *cl,
   size_t arg_number = 0;
   size_t a = 0;
   chakal_format_allocated_size(fmt, &a, &arg_number);
+  printf("[DEBUG] New Closure (apply m)\n");
   struct chakal_closure *new_cl = chakal_alloc(cl->partial.alloc, sizeof(*new_cl));
   new_cl->partial.fn = cl->partial.fn;
   new_cl->partial.arity = cl->partial.arity;
@@ -82,6 +80,7 @@ struct chakal_closure *chakal_closure_apply_multiple(struct chakal_closure *cl,
     switch (fmt[fmt_idx]) {
     case 'c':
       {
+          printf("[DEBUG] alloc char\n");
           char* c = chakal_alloc(cl->partial.alloc, sizeof(char));
           *c = (char)va_arg(args, int);
           new_cl->partial.args = chakal_ntree_append(cl->partial.alloc, new_cl->partial.args, c);
@@ -89,6 +88,7 @@ struct chakal_closure *chakal_closure_apply_multiple(struct chakal_closure *cl,
       break;
     case 'i':
       {
+          printf("[DEBUG] alloc int\n");
           int* c = chakal_alloc(cl->partial.alloc, sizeof(int));
           *c = (int)va_arg(args, int);
           new_cl->partial.args = chakal_ntree_append(cl->partial.alloc, new_cl->partial.args, c);
@@ -96,6 +96,7 @@ struct chakal_closure *chakal_closure_apply_multiple(struct chakal_closure *cl,
       break;
     case 'f':
       {
+          printf("[DEBUG] alloc float\n");
           float* c = chakal_alloc(cl->partial.alloc, sizeof(float));
           *c = (float)va_arg(args, double);
           new_cl->partial.args = chakal_ntree_append(cl->partial.alloc, new_cl->partial.args, c);
@@ -103,6 +104,7 @@ struct chakal_closure *chakal_closure_apply_multiple(struct chakal_closure *cl,
       break;
     case 'd':
       {
+          printf("[DEBUG] alloc double\n");
           double* c = chakal_alloc(cl->partial.alloc, sizeof(double));
           *c = (double)va_arg(args, double);
           new_cl->partial.args = chakal_ntree_append(cl->partial.alloc, new_cl->partial.args, c);
