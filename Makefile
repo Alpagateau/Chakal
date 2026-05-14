@@ -5,12 +5,15 @@ TEST_INCLUDE:=-I./lib/munit
 SRC:=$(wildcard src/*.c)
 OBJ:=$(filter-out build/main.o, $(patsubst src/%.c, build/%.o, $(SRC)))
 
-all: build/test build/types_test build/libchakal.a build/ntree_test
+all: build/test build/types_test build/libchakal.a build/libchakal.so build/ntree_test
 
-build/libchakal.a: build/chakal_types.o build/chakal_linked_list.o
-	ar rcs build/libchakal.a build/chakal_types.o build/chakal_linked_list.o
+build/libchakal.a: $(OBJ)
+	ar rcs build/libchakal.a $(OBJ)
 
-build/test: $(OBJ) src/main.c
+build/libchakal.so: $(OBJ)
+	gcc -shared $(OBJ) -o libchakal.so
+
+build/test: $(OBJ) src/main.c build/libchakal.so build/libchakal.a
 	gcc $(OBJ) src/main.c -o build/test $(CFLAGS) $(INCLUDE)
 
 build/%.o: src/%.c
