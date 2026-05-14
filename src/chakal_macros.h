@@ -6,17 +6,9 @@
 static struct chakal_closure* CONCAT(chakal_closure_apply_, name)( \
   struct chakal_closure* cl, t arg \
 ){ \
-  struct chakal_closure* new_cl = chakal_alloc(cl->partial.alloc, sizeof(*new_cl)); \
-  new_cl->partial.fn      = cl->partial.fn; \
-  new_cl->partial.arity   = cl->partial.arity; \
-  new_cl->partial.applied = cl->partial.applied+1; \
-  new_cl->partial.alloc   = cl->partial.alloc; \
   t *ptr = chakal_alloc(cl->partial.alloc, sizeof(t)); \
-  *ptr = arg; \
-  new_cl->partial.args = chakal_ntree_append( \
-    cl->partial.alloc,cl->partial.args,ptr \
-  ); \
-  return new_cl;  \
+  *ptr = arg;\
+  return chakal_closure_apply(cl, ptr); \
 }
 
 #ifndef CHAKAL_NO_INFO

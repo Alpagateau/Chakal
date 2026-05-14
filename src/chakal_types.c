@@ -124,6 +124,10 @@ struct chakal_closure *chakal_closure_apply_multiple(struct chakal_closure *cl,
     fmt_idx++;
   }
   va_end(args);
+  if(new_cl->partial.arity == new_cl->partial.applied)
+  {
+    return chakal_closure_eval(new_cl);
+  }
   return new_cl;
 }
 
@@ -131,7 +135,8 @@ struct chakal_closure* chakal_closure_apply_eval(
   struct chakal_closure* cl, void* arg
 )
 { 
-  struct chakal_arena* a = new_arena(256);
+  const int arena_size = 256;
+  struct chakal_arena* a = new_arena(arena_size);
   struct chakal_closure *new_cl = chakal_alloc(a, sizeof(*new_cl));
   new_cl->partial.fn = cl->partial.fn;
   new_cl->partial.arity = cl->partial.arity;

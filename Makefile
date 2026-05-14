@@ -1,4 +1,4 @@
-CFLAGS:=-Wall -Wextra -std=c99 -g -lm
+CFLAGS:= -DCHAKAL_NO_INFO -Wall -Wextra -std=c99 -g -lm
 INCLUDE:=-I./src
 TEST_INCLUDE:=-I./lib/munit
 
